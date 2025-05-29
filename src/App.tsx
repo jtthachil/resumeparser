@@ -4,6 +4,9 @@ import { FileUpload } from './components/FileUpload';
 import { ParsingModeToggle } from './components/ParsingModeToggle';
 import { ParsedResults } from './components/ParsedResults';
 import { PARSING_MODES } from './config/constants';
+import { extractTextFromFile } from './utils/fileProcessor';
+import { parseResumeWithLLM } from './services/llmParser';
+import { parseResumeWithRules } from './services/rulesParser';
 import type { ParseResult } from './types/resume';
 
 function App() {
@@ -34,17 +37,6 @@ function App() {
     setParseResult(null);
 
     try {
-      // Dynamic imports to prevent loading issues
-      const [
-        { extractTextFromFile },
-        { parseResumeWithLLM },
-        { parseResumeWithRules }
-      ] = await Promise.all([
-        import('./utils/fileProcessor'),
-        import('./services/llmParser'),
-        import('./services/rulesParser')
-      ]);
-
       // Extract text from file
       const resumeText = await extractTextFromFile(selectedFile);
       
