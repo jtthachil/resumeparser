@@ -171,7 +171,18 @@ export async function parseResumeWithLLM(resumeText: string): Promise<ParseResul
   const startTime = Date.now();
   
   try {
-    const response = await getClient().chat.completions.create({
+    // Debug configuration
+    console.log('Azure Config Check:');
+    console.log('- API Key present:', AZURE_CONFIG.apiKey ? 'Yes' : 'No');
+    console.log('- API Key length:', AZURE_CONFIG.apiKey ? AZURE_CONFIG.apiKey.length : 0);
+    console.log('- Endpoint:', AZURE_CONFIG.endpoint);
+    console.log('- Deployment:', AZURE_CONFIG.deploymentName);
+    console.log('- API Version:', AZURE_CONFIG.apiVersion);
+    
+    const client = getClient();
+    console.log('OpenAI client created successfully');
+    
+    const response = await client.chat.completions.create({
       model: AZURE_CONFIG.deploymentName,
       messages: [
         {
@@ -243,20 +254,53 @@ export async function parseResumeWithLLM(resumeText: string): Promise<ParseResul
     
     const processingTime = Date.now() - startTime;
     
-    // For debugging, let's also return a fallback response instead of just failing
-    if (error instanceof Error && error.message.includes('JSON')) {
-      return {
-        success: false,
-        error: `LLM returned malformed JSON: ${error.message}. This is usually due to the AI model response being truncated or containing syntax errors.`,
-        method: 'llm',
-        processingTime,
-        data: createFallbackResponse() // Provide fallback data for debugging
-      };
+    // Better error handling for different error types
+    if (error instanceof Error) {
+      // Network/Connection errors
+      if (error.message.includes('fetch') || error.message.includes('network') || error.message.includes('ENOTFOUND')) {
+        return {
+          success: false,
+          error: 'Connection error: Unable to reach Azure OpenAI service. Please check your internet connection and try again.',
+          method: 'llm',
+          processingTime
+        };
+      }
+      
+      // Authentication errors
+      if (error.message.includes('401') || error.message.includes('unauthorized') || error.message.includes('invalid_api_key')) {
+        return {
+          success: false,
+          error: 'Authentication error: Invalid API key or credentials. Please check your Azure OpenAI configuration.',
+          method: 'llm',
+          processingTime
+        };
+      }
+      
+      // Rate limiting
+      if (error.message.includes('429') || error.message.includes('rate')) {
+        return {
+          success: false,
+          error: 'Rate limit exceeded: Too many requests. Please wait a moment and try again.',
+          method: 'llm',
+          processingTime
+        };
+      }
+      
+      // JSON parsing errors
+      if (error.message.includes('JSON')) {
+        return {
+          success: false,
+          error: `LLM returned malformed JSON: ${error.message}. This is usually due to the AI model response being truncated or containing syntax errors.`,
+          method: 'llm',
+          processingTime,
+          data: createFallbackResponse()
+        };
+      }
     }
     
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error occurred',
+      error: `Connection error: ${error instanceof Error ? error.message : 'Unknown error occurred'}`,
       method: 'llm',
       processingTime
     };
