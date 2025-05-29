@@ -1,38 +1,4 @@
-import type { ParsedResume, ParseResult, Contact, Experience, Education, Skill } from '../types/resume';
-
-// Regular expression patterns for various resume sections
-const PATTERNS = {
-  email: /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g,
-  phone: /(?:\+?1[-.\s]?)?\(?([0-9]{3})\)?[-.\s]?([0-9]{3})[-.\s]?([0-9]{4})/g,
-  linkedin: /(?:linkedin\.com\/in\/|linkedin\.com\/profile\/view\?id=)([A-Za-z0-9\-\.]+)/gi,
-  github: /(?:github\.com\/)([A-Za-z0-9\-\.]+)/gi,
-  website: /(?:https?:\/\/)?(?:www\.)?([A-Za-z0-9\-\.]+\.[A-Za-z]{2,})/gi,
-  
-  // Date patterns
-  dateRange: /(\d{1,2}\/\d{4}|\d{4}|[A-Za-z]+ \d{4})\s*[-–—]\s*(\d{1,2}\/\d{4}|\d{4}|[A-Za-z]+ \d{4}|Present|Current)/gi,
-  date: /(\d{1,2}\/\d{4}|\d{4}|[A-Za-z]+ \d{4})/g,
-  
-  // University/College patterns
-  university: /\b(?:University|College|Institute|School|Academy|Polytechnic)\b/gi,
-  degree: /\b(?:PhD|Ph\.D|Doctorate|Master|M\.S|M\.A|M\.Sc|MBA|Bachelor|B\.S|B\.A|B\.Sc|B\.Tech|B\.E|Associate|AA|AS|Certificate|Diploma)\b/gi,
-  
-  // Company indicators
-  company: /\b(?:Inc|LLC|Corp|Corporation|Ltd|Limited|Company|Co\.|Technologies|Tech|Solutions|Systems|Services|Group|Enterprises|Associates)\b/gi,
-  
-  // Skills indicators
-  skills: /\b(?:Skills|Technical Skills|Core Competencies|Technologies|Programming Languages|Languages|Tools|Frameworks|Software|Platforms)\b/gi,
-  
-  // Section headers
-  sections: {
-    experience: /\b(?:Experience|Employment|Work History|Professional Experience|Career|Jobs)\b/gi,
-    education: /\b(?:Education|Academic|Qualifications|Credentials)\b/gi,
-    skills: /\b(?:Skills|Technical Skills|Core Competencies|Technologies|Expertise)\b/gi,
-    projects: /\b(?:Projects|Personal Projects|Portfolio|Work|Assignments)\b/gi,
-    certifications: /\b(?:Certifications|Certificates|Licenses|Credentials)\b/gi,
-    languages: /\b(?:Languages|Language Proficiency)\b/gi,
-    summary: /\b(?:Summary|Profile|Objective|Overview|About|Bio)\b/gi
-  }
-};
+import type { ParsedResume, ParseResult, Experience, Education, Skill } from '../types/resume';
 
 export function parseResumeWithRules(resumeText: string): ParseResult {
   const startTime = Date.now();
@@ -47,11 +13,11 @@ export function parseResumeWithRules(resumeText: string): ParseResult {
       experience: extractExperience(lines),
       education: extractEducation(lines),
       skills: extractSkills(lines),
-      projects: extractProjects(lines),
-      certifications: extractCertifications(lines),
-      languages: extractLanguages(lines),
+      projects: extractProjects(),
+      certifications: extractCertifications(),
+      languages: extractLanguages(),
       achievements: extractAchievements(lines),
-      interests: extractInterests(lines)
+      interests: extractInterests()
     };
     
     const processingTime = Date.now() - startTime;
@@ -253,7 +219,7 @@ function extractEducation(lines: string[]): Education[] {
     }
   }
   
-  // Save last entry if it has required fields
+  // Save last entry
   if ((currentEntry.institution && currentEntry.degree) || 
       (currentEntry.institution && currentEntry.institution.length > 0) || 
       (currentEntry.degree && currentEntry.degree.length > 0)) {
@@ -300,17 +266,17 @@ function extractSkills(lines: string[]): Skill[] {
   return skills;
 }
 
-function extractProjects(lines: string[]): any[] {
+function extractProjects(): any[] {
   // Implementation for projects section
   return [];
 }
 
-function extractCertifications(lines: string[]): any[] {
+function extractCertifications(): any[] {
   // Implementation for certifications section
   return [];
 }
 
-function extractLanguages(lines: string[]): any[] {
+function extractLanguages(): any[] {
   // Implementation for languages section
   return [];
 }
@@ -336,7 +302,7 @@ function extractAchievements(lines: string[]): string[] {
   return achievements;
 }
 
-function extractInterests(lines: string[]): string[] {
+function extractInterests(): string[] {
   // Implementation for interests section
   return [];
 }
